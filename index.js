@@ -49,7 +49,7 @@ function onMouseMove(event) {
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 }
 
-let currentPlayer;
+let currentPlayer = false;
 
 let preventClickOnDrag = false;
 document.onmousedown = () => {
@@ -58,25 +58,21 @@ document.onmousedown = () => {
 document.onmouseup = () => {
   if (preventClickOnDrag) {
     const intersects = raycaster.intersectObjects(scene.children);
-    console.log(intersects);
     if (intersects.length > 0) {
       let aux = squares.filter((sqr) => sqr.id === intersects[0].object.id);
       if (aux.length > 0) {
         if (!aux[0].inUse) {
           aux[0].inUse = true;
           aux[0].player = currentPlayer;
-          if (currentPlayer) {
-            aux[0].material.color = new THREE.Color(0xe10040);
-          } else {
-            aux[0].material.color = new THREE.Color(0x00eee1);
-          }
+          createPlayerBlock(intersects[0].object.position, currentPlayer);
           const allAvailable = squares.filter((sqr) => sqr.inUse === true);
-          if (allAvailable.length === 9) {
+          if (allAvailable.length === 25) {
             createGame();
             return;
           }
         }
       }
+      currentPlayer = !currentPlayer;
     }
   }
 };
@@ -86,10 +82,22 @@ document.onmousemove = () => {
 window.addEventListener("mousemove", onMouseMove, false);
 
 //OBJECT
-const geometry = new THREE.CubeGeometry(100, 100, 100);
-const material = new THREE.MeshLambertMaterial({ color: 0xf3ffe2 });
-const mesh = new THREE.Mesh(geometry, material);
-// scene.add(mesh);
+function createPlayerBlock(coords, color) {
+  console.log(coords, color);
+  const colors = {
+    true: 0xe10040,
+    false: 0x00eee1,
+  };
+
+  const geometry = new THREE.CubeGeometry(20, 20, 20);
+  const material = new THREE.MeshLambertMaterial({ color: colors[color] });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.x = coords.x - 0;
+  mesh.position.y = coords.y + 10;
+  mesh.position.z = coords.z;
+
+  scene.add(mesh);
+}
 
 // Helpers
 let squares = [];
