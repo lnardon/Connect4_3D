@@ -56,25 +56,31 @@ document.onmousedown = () => {
   preventClickOnDrag = true;
 };
 document.onmouseup = () => {
-  if (preventClickOnDrag) {
-    const intersects = raycaster.intersectObjects(scene.children);
-    if (intersects.length > 0) {
-      let aux = squares.filter((sqr) => sqr.id === intersects[0].object.id);
-      if (aux.length > 0) {
-        if (!aux[0].inUse) {
-          aux[0].inUse = true;
-          aux[0].player = currentPlayer;
-          createPlayerBlock(intersects[0].object.position, currentPlayer);
-          const allAvailable = squares.filter((sqr) => sqr.inUse === true);
-          if (allAvailable.length === 25) {
-            createGame();
-            return;
-          }
-        }
-      }
-      currentPlayer = !currentPlayer;
+  // if (preventClickOnDrag) {
+  const intersects = raycaster.intersectObjects(scene.children);
+  console.log(intersects);
+  if (intersects.length > 0) {
+    // aux[aux.length].inUse = true;
+    intersects[0].index
+      ? (intersects[0].index = intersects[0].index++)
+      : (intersects[0].index = 1);
+    intersects[0].player = currentPlayer;
+    createPlayerBlock(
+      intersects[0].object.position,
+      intersects[0].object.index !== undefined
+        ? intersects[0].object.index + 1
+        : 0,
+      currentPlayer
+    );
+    const allAvailable = squares.filter((sqr) => sqr.inUse === true);
+    if (allAvailable.length === 25) {
+      createGame();
+      return;
     }
+
+    currentPlayer = !currentPlayer;
   }
+  // }
 };
 document.onmousemove = () => {
   preventClickOnDrag = false;
@@ -82,8 +88,8 @@ document.onmousemove = () => {
 window.addEventListener("mousemove", onMouseMove, false);
 
 //OBJECT
-function createPlayerBlock(coords, color) {
-  console.log(coords, color);
+function createPlayerBlock(coords, blockIndex, color) {
+  console.log(blockIndex);
   const colors = {
     true: 0xe10040,
     false: 0x00eee1,
@@ -92,8 +98,11 @@ function createPlayerBlock(coords, color) {
   const geometry = new THREE.CubeGeometry(20, 20, 20);
   const material = new THREE.MeshLambertMaterial({ color: colors[color] });
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.x = coords.x - 0;
-  mesh.position.y = coords.y + 10;
+  mesh.position.x = coords.x;
+  mesh.index = blockIndex;
+  blockIndex === 0
+    ? (mesh.position.y = coords.y + 10)
+    : (mesh.position.y = coords.y + 20);
   mesh.position.z = coords.z;
 
   scene.add(mesh);
