@@ -41,6 +41,50 @@ scene.add(light2);
 // CONTROLS
 const controls = new OrbitControls(camera, renderer.domElement);
 
+// RAYCASTER
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+function onMouseMove(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+}
+
+let currentPlayer;
+
+let preventClickOnDrag = false;
+document.onmousedown = () => {
+  preventClickOnDrag = true;
+};
+document.onmouseup = () => {
+  if (preventClickOnDrag) {
+    const intersects = raycaster.intersectObjects(scene.children);
+    console.log(intersects);
+    if (intersects.length > 0) {
+      let aux = squares.filter((sqr) => sqr.id === intersects[0].object.id);
+      if (aux.length > 0) {
+        if (!aux[0].inUse) {
+          aux[0].inUse = true;
+          aux[0].player = currentPlayer;
+          if (currentPlayer) {
+            aux[0].material.color = new THREE.Color(0xe10040);
+          } else {
+            aux[0].material.color = new THREE.Color(0x00eee1);
+          }
+          const allAvailable = squares.filter((sqr) => sqr.inUse === true);
+          if (allAvailable.length === 9) {
+            createGame();
+            return;
+          }
+        }
+      }
+    }
+  }
+};
+document.onmousemove = () => {
+  preventClickOnDrag = false;
+};
+window.addEventListener("mousemove", onMouseMove, false);
+
 //OBJECT
 const geometry = new THREE.CubeGeometry(100, 100, 100);
 const material = new THREE.MeshLambertMaterial({ color: 0xf3ffe2 });
@@ -55,7 +99,7 @@ function createGame() {
   let x = 0;
   let z = -2;
   for (let i = 0; i < 25; i++) {
-    const geometry = new THREE.BoxGeometry(20, 5, 20);
+    const geometry = new THREE.BoxGeometry(20, 2, 20);
     const material = new THREE.MeshLambertMaterial({ color: 0xfafafa });
     const square = new THREE.Mesh(geometry, material);
     if (i % 5 === 0) {
@@ -75,8 +119,23 @@ createGame();
 
 //RENDER LOOP
 function render() {
-  mesh.rotation.x += 0.01;
-  mesh.rotation.y += 0.03;
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(scene.children);
+  squares.forEach((sqrt) =>
+    sqrt.inUse === false
+      ? (sqrt.material.color = new THREE.Color(0xe1e1e1))
+      : null
+  );
+  if (intersects.length > 0) {
+    let aux = squares.filter((sqr) => sqr.id === intersects[0].object.id);
+    if (aux.length > 0) {
+      aux[0].inUse
+        ? null
+        : currentPlayer
+        ? (aux[0].material.color = new THREE.Color(0xda9dae))
+        : (aux[0].material.color = new THREE.Color(0x9be5e2));
+    }
+  }
   controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(render);
