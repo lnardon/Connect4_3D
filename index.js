@@ -1,5 +1,6 @@
 // IMPORTS
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js";
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js";
 
 //SCENE
@@ -58,7 +59,7 @@ document.onmousedown = () => {
 document.onmouseup = () => {
   // if (preventClickOnDrag) {
   const intersects = raycaster.intersectObjects(scene.children);
-  console.log(intersects);
+  console.log("Intersects", scene);
   if (intersects.length > 0) {
     // aux[aux.length].inUse = true;
     intersects[0].index
@@ -87,6 +88,30 @@ document.onmousemove = () => {
 };
 window.addEventListener("mousemove", onMouseMove, false);
 
+const loader = new GLTFLoader();
+loader.load(
+  "Board.glb",
+  function (gltf) {
+    // scene.position.y = -10;
+    gltf.scene.scale.set(20, 20, 20);
+    scene.add(gltf.scene);
+    gltf.animations; // Array<THREE.AnimationClip>
+    gltf.scene; // THREE.Group
+    gltf.scenes; // Array<THREE.Group>
+    gltf.cameras; // Array<THREE.Camera>
+    gltf.asset; // Object
+    console.log(gltf);
+  },
+
+  function (xhr) {
+    console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+  },
+
+  function (error) {
+    console.log("An error happened", error);
+  }
+);
+
 //OBJECT
 function createPlayerBlock(coords, blockIndex, color) {
   console.log(blockIndex);
@@ -101,59 +126,41 @@ function createPlayerBlock(coords, blockIndex, color) {
   mesh.position.x = coords.x;
   mesh.index = blockIndex;
   blockIndex === 0
-    ? (mesh.position.y = coords.y + 10)
+    ? (mesh.position.y = coords.y + 11)
     : (mesh.position.y = coords.y + 20);
   mesh.position.z = coords.z;
 
   scene.add(mesh);
 }
 
-// Helpers
-let squares = [];
-function createGame() {
-  requestAnimationFrame(render);
-  squares = [];
-  let x = 0;
-  let z = -2;
-  for (let i = 0; i < 25; i++) {
-    const geometry = new THREE.BoxGeometry(20, 2, 20);
-    const material = new THREE.MeshLambertMaterial({ color: 0xfafafa });
-    const square = new THREE.Mesh(geometry, material);
-    if (i % 5 === 0) {
-      x = -1;
-      z++;
-    }
-    square.rotateX(Math.PI / 1);
-    square.rotateY(Math.PI / 2);
-    square.position.set(23 * x, -10, 23 * z);
-    square.inUse = false;
-    squares.push(square);
-    scene.add(squares[i]);
-    x++;
-  }
-}
-createGame();
+// Load Manager
+const manager = new THREE.LoadingManager();
+manager.onStart = (url, itemsLoaded, itemsTotal) => {
+  document.getElementById("progressLoading").innerText = "Loading Files ...";
+};
+
+manager.onProgress = (url, itemsLoaded, itemsTotal) => {
+  document.getElementById(
+    "progressLoading"
+  ).innerText = `Loading Files ... ${itemsLoaded}/${itemsTotal}`;
+};
+
+manager.onLoad = () => {
+  document.getElementById("progressLoading").style.display = "none";
+};
+
+manager.onError = function (url) {
+  console.log("There was an error loading " + url);
+  document.getElementById(
+    "progressLoading"
+  ).innerText = `Error loading the file ${url}`;
+};
 
 //RENDER LOOP
 function render() {
   raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(scene.children);
-  squares.forEach((sqrt) =>
-    sqrt.inUse === false
-      ? (sqrt.material.color = new THREE.Color(0xe1e1e1))
-      : null
-  );
-  if (intersects.length > 0) {
-    let aux = squares.filter((sqr) => sqr.id === intersects[0].object.id);
-    if (aux.length > 0) {
-      aux[0].inUse
-        ? null
-        : currentPlayer
-        ? (aux[0].material.color = new THREE.Color(0xda9dae))
-        : (aux[0].material.color = new THREE.Color(0x9be5e2));
-    }
-  }
   controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(render);
 }
+requestAnimationFrame(render);
