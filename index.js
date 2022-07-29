@@ -22,7 +22,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   3000
 );
-camera.position.z = 250;
+camera.position.z = 17;
 window.addEventListener(
   "resize",
   function () {
@@ -58,8 +58,8 @@ document.onmousedown = () => {
 };
 document.onmouseup = () => {
   // if (preventClickOnDrag) {
-  const intersects = raycaster.intersectObjects(scene.children);
-  console.log("Intersects", scene);
+  const intersects = raycaster.intersectObjects(scene.children[2].children);
+  console.log("Intersects", intersects, scene);
   if (intersects.length > 0) {
     // aux[aux.length].inUse = true;
     intersects[0].index
@@ -68,16 +68,14 @@ document.onmouseup = () => {
     intersects[0].player = currentPlayer;
     createPlayerBlock(
       intersects[0].object.position,
-      intersects[0].object.index !== undefined
-        ? intersects[0].object.index + 1
-        : 0,
+      intersects[0].object.index,
       currentPlayer
     );
-    const allAvailable = squares.filter((sqr) => sqr.inUse === true);
-    if (allAvailable.length === 25) {
-      createGame();
-      return;
-    }
+    // const allAvailable = squares.filter((sqr) => sqr.inUse === true);
+    // if (allAvailable.length === 25) {
+    //   createGame();
+    //   return;
+    // }
 
     currentPlayer = !currentPlayer;
   }
@@ -93,7 +91,7 @@ loader.load(
   "Board.glb",
   function (gltf) {
     // scene.position.y = -10;
-    gltf.scene.scale.set(20, 20, 20);
+    // gltf.scene.scale.set(20, 20, 20);
     scene.add(gltf.scene);
     gltf.animations; // Array<THREE.AnimationClip>
     gltf.scene; // THREE.Group
@@ -114,20 +112,17 @@ loader.load(
 
 //OBJECT
 function createPlayerBlock(coords, blockIndex, color) {
-  console.log(blockIndex);
   const colors = {
     true: 0xe10040,
     false: 0x00eee1,
   };
 
-  const geometry = new THREE.CubeGeometry(20, 20, 20);
+  const geometry = new THREE.CubeGeometry(1, 1, 1);
   const material = new THREE.MeshLambertMaterial({ color: colors[color] });
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.x = coords.x;
   mesh.index = blockIndex;
-  blockIndex === 0
-    ? (mesh.position.y = coords.y + 11)
-    : (mesh.position.y = coords.y + 20);
+  mesh.position.x = coords.x;
+  mesh.position.y = coords.y + 0.5;
   mesh.position.z = coords.z;
 
   scene.add(mesh);
