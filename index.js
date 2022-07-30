@@ -40,7 +40,9 @@ window.addEventListener(
 
 //LIGHTS
 const light1 = new THREE.AmbientLight(0xffffff, 0.5);
-const light2 = new THREE.PointLight(0xffffff, 1);
+const light2 = new THREE.PointLight(0xffffff, 0.55);
+light1.position.y = 6;
+light2.position.y = 10;
 scene.add(light1);
 scene.add(light2);
 
@@ -67,17 +69,16 @@ document.onmouseup = (e) => {
   }
   console.log("Intersects", intersects, scene);
   if (intersects.length > 0) {
-    // aux[aux.length].inUse = true;
-    // intersects[0].index
-    //   ? (intersects[0].index = intersects[0].index++)
-    //   : (intersects[0].index = 1);
-    intersects[0].player = currentPlayer;
-    createPlayerBlock(
-      intersects[0].object.position,
-      intersects[0].object.index,
-      currentPlayer
-    );
-    currentPlayer = !currentPlayer;
+    if (!intersects[0].object.index || intersects[0].object.index <= 5) {
+      createPlayerBlock(
+        intersects[0].object.position,
+        intersects[0].object.index,
+        currentPlayer
+      );
+      currentPlayer = !currentPlayer;
+    } else {
+      alert("Maximum of 5 blocks can be stacked.");
+    }
   }
   // }
 };
@@ -85,27 +86,26 @@ document.onmousemove = () => {
   preventClickOnDrag = false;
 };
 window.addEventListener("mousemove", onMouseMove, false);
-window.addEventListener("ondrop", () => {
-  console.log("dropped");
-});
 
 const loader = new GLTFLoader();
 loader.load(
   "Board.glb",
   function (gltf) {
-    // scene.position.y = -10;
-    // gltf.scene.scale.set(20, 20, 20);
     scene.add(gltf.scene);
-    gltf.animations; // Array<THREE.AnimationClip>
-    gltf.scene; // THREE.Group
-    gltf.scenes; // Array<THREE.Group>
-    gltf.cameras; // Array<THREE.Camera>
-    gltf.asset; // Object
-    console.log(gltf);
+    scene.position.y = -1;
+    scene.children[2].position.y = 0.5;
+    gltf.animations;
+    gltf.scene;
+    gltf.scenes;
+    gltf.cameras;
+    gltf.asset;
   },
 
   function (xhr) {
     console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+    if ((xhr.loaded / xhr.total) * 100 === 100) {
+      document.getElementById("progressLoading").style.display = "none";
+    }
   },
 
   function (error) {
@@ -118,12 +118,10 @@ function createPlayerBlock(coords, blockIndex = 1, color) {
   const geometry = new THREE.CubeGeometry(1, 1, 1);
   const material = new THREE.MeshLambertMaterial({ color: colors[color] });
   const mesh = new THREE.Mesh(geometry, material);
-  console.log(blockIndex);
   mesh.index = blockIndex + 1;
   mesh.position.x = coords.x;
-  mesh.position.y = blockIndex * 0.5 + coords.y;
+  mesh.position.y = coords.y + 1;
   mesh.position.z = coords.z;
-
   scene.add(mesh);
 }
 
