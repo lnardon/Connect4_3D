@@ -69,7 +69,11 @@ document.onmouseup = (e) => {
   }
   console.log("Intersects", intersects, scene);
   if (intersects.length > 0) {
-    if (!intersects[0].object.index || intersects[0].object.index <= 5) {
+    if (
+      !intersects[0].object.index ||
+      (intersects[0].object.index <= 5 && !intersects[0].object.stacked)
+    ) {
+      intersects[0].object.stacked = true;
       createPlayerBlock(
         intersects[0].object.position,
         intersects[0].object.index,
@@ -77,7 +81,9 @@ document.onmouseup = (e) => {
       );
       currentPlayer = !currentPlayer;
     } else {
-      alert("Maximum of 5 blocks can be stacked.");
+      if (intersects[0].object.index >= 5) {
+        alert("Maximum of 5 blocks can be stacked.");
+      }
     }
   }
   // }
