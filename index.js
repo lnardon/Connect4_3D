@@ -3,11 +3,6 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.118/build/three.mod
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js";
 
-const colors = {
-  true: 0xe10040,
-  false: 0x00eee1,
-};
-
 //SCENE
 const scene = new THREE.Scene();
 
@@ -51,48 +46,8 @@ const controls = new OrbitControls(camera, renderer.domElement);
 
 // RAYCASTER
 const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-function onMouseMove(event) {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-}
 
-let currentPlayer = false;
-
-document.onmouseup = (e) => {
-  // if (preventClickOnDrag) {
-  let intersects;
-  if ((intersects = raycaster.intersectObjects(scene.children).length > 0)) {
-    intersects = raycaster.intersectObjects(scene.children);
-  } else {
-    intersects = raycaster.intersectObjects(scene.children[2].children);
-  }
-  console.log("Intersects", intersects, scene);
-  if (intersects.length > 0) {
-    if (
-      !intersects[0].object.index ||
-      (intersects[0].object.index <= 5 && !intersects[0].object.stacked)
-    ) {
-      intersects[0].object.stacked = true;
-      createPlayerBlock(
-        intersects[0].object.position,
-        intersects[0].object.index,
-        currentPlayer
-      );
-      currentPlayer = !currentPlayer;
-    } else {
-      if (intersects[0].object.index >= 5) {
-        alert("Maximum of 5 blocks can be stacked.");
-      }
-    }
-  }
-  // }
-};
-document.onmousemove = () => {
-  preventClickOnDrag = false;
-};
-window.addEventListener("mousemove", onMouseMove, false);
-
+// BOARD
 const loader = new GLTFLoader();
 loader.load(
   "Board.glb",
@@ -120,7 +75,7 @@ loader.load(
 );
 
 //OBJECT
-function createPlayerBlock(coords, blockIndex = 1, color) {
+function createPlayerBlock(coords, blockIndex = 1, color, idx) {
   const geometry = new THREE.CubeGeometry(1, 1, 1);
   const material = new THREE.MeshLambertMaterial({ color: colors[color] });
   const mesh = new THREE.Mesh(geometry, material);
@@ -129,6 +84,7 @@ function createPlayerBlock(coords, blockIndex = 1, color) {
   mesh.position.y = coords.y + 1;
   mesh.position.z = coords.z;
   scene.add(mesh);
+  checkWinner(Math.floor(idx / 5), idx % 5);
 }
 
 // Load Manager
@@ -152,6 +108,132 @@ manager.onError = function (url) {
   document.getElementById(
     "progressLoading"
   ).innerText = `Error loading the file ${url}`;
+};
+
+let board = [
+  [
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+  ],
+  [
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+  ],
+  [
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+  ],
+  [
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+  ],
+  [
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+    [null, null, null, null, null],
+  ],
+];
+let currentPlayer = false;
+let preventClickOnDrag = false;
+const colors = {
+  true: 0xe10040,
+  false: 0x00eee1,
+};
+let mouse = new THREE.Vector2();
+
+function onMouseMove(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  preventClickOnDrag = false;
+}
+
+function verifyX(row, col, maxCol) {
+  let player = board[0][row][col];
+  let count = 0;
+
+  for (let i = 0; i < maxCol; i++) {
+    if (board[0][row][i] == player) count++;
+    else count = 0;
+
+    if (count >= 4) return 1;
+  }
+  return 0;
+}
+
+function verifyY(row, col, maxRow) {
+  let player = board[0][row][col];
+  let count = 0;
+
+  for (let i = 0; i < maxRow; i++) {
+    if (board[0][i][col] == player) count++;
+    else count = 0;
+
+    if (count >= 4) return 1;
+  }
+  return 0;
+}
+
+function checkWinner(x, y) {
+  const checkX = verifyX(x, y, 5, 5);
+  const checkY = verifyY(x, y, 5, 5);
+  console.log(checkX, checkY, x, y, board);
+  if (checkX === 1 || checkY === 1) {
+    alert("Game Over.");
+  }
+}
+
+document.onmousedown = (e) => {
+  preventClickOnDrag = true;
+};
+document.addEventListener("mousemove", onMouseMove, false);
+
+document.onclick = (e) => {
+  if (preventClickOnDrag) {
+    let intersects;
+    if ((intersects = raycaster.intersectObjects(scene.children).length > 0)) {
+      intersects = raycaster.intersectObjects(scene.children);
+    } else {
+      intersects = raycaster.intersectObjects(scene.children[2].children);
+    }
+    if (intersects.length > 0) {
+      if (
+        !intersects[0].object.index ||
+        (intersects[0].object.index <= 5 && !intersects[0].object.stacked)
+      ) {
+        let idx = intersects[0].object.userData.name.charAt(3);
+        if (intersects[0].object.userData.name.charAt(4)) {
+          idx += intersects[0].object.userData.name.charAt(4);
+        }
+        board[0][Math.floor(idx / 5)][idx % 5] = currentPlayer;
+        intersects[0].object.stacked = true;
+        createPlayerBlock(
+          intersects[0].object.position,
+          intersects[0].object.index,
+          currentPlayer,
+          idx
+        );
+        currentPlayer = !currentPlayer;
+      } else {
+        if (intersects[0].object.index >= 5) {
+          alert("Maximum of 5 blocks can be stacked.");
+        }
+      }
+    }
+  }
 };
 
 //RENDER LOOP
