@@ -3,6 +3,11 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.118/build/three.mod
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js";
 
+const colors = {
+  true: 0xe10040,
+  false: 0x00eee1,
+};
+
 //SCENE
 const scene = new THREE.Scene();
 
@@ -52,31 +57,26 @@ function onMouseMove(event) {
 
 let currentPlayer = false;
 
-let preventClickOnDrag = false;
-document.onmousedown = () => {
-  preventClickOnDrag = true;
-};
-document.onmouseup = () => {
+document.onmouseup = (e) => {
   // if (preventClickOnDrag) {
-  const intersects = raycaster.intersectObjects(scene.children[2].children);
+  let intersects;
+  if ((intersects = raycaster.intersectObjects(scene.children).length > 0)) {
+    intersects = raycaster.intersectObjects(scene.children);
+  } else {
+    intersects = raycaster.intersectObjects(scene.children[2].children);
+  }
   console.log("Intersects", intersects, scene);
   if (intersects.length > 0) {
     // aux[aux.length].inUse = true;
-    intersects[0].index
-      ? (intersects[0].index = intersects[0].index++)
-      : (intersects[0].index = 1);
+    // intersects[0].index
+    //   ? (intersects[0].index = intersects[0].index++)
+    //   : (intersects[0].index = 1);
     intersects[0].player = currentPlayer;
     createPlayerBlock(
       intersects[0].object.position,
       intersects[0].object.index,
       currentPlayer
     );
-    // const allAvailable = squares.filter((sqr) => sqr.inUse === true);
-    // if (allAvailable.length === 25) {
-    //   createGame();
-    //   return;
-    // }
-
     currentPlayer = !currentPlayer;
   }
   // }
@@ -85,6 +85,9 @@ document.onmousemove = () => {
   preventClickOnDrag = false;
 };
 window.addEventListener("mousemove", onMouseMove, false);
+window.addEventListener("ondrop", () => {
+  console.log("dropped");
+});
 
 const loader = new GLTFLoader();
 loader.load(
@@ -111,18 +114,14 @@ loader.load(
 );
 
 //OBJECT
-function createPlayerBlock(coords, blockIndex, color) {
-  const colors = {
-    true: 0xe10040,
-    false: 0x00eee1,
-  };
-
+function createPlayerBlock(coords, blockIndex = 1, color) {
   const geometry = new THREE.CubeGeometry(1, 1, 1);
   const material = new THREE.MeshLambertMaterial({ color: colors[color] });
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.index = blockIndex;
+  console.log(blockIndex);
+  mesh.index = blockIndex + 1;
   mesh.position.x = coords.x;
-  mesh.position.y = coords.y + 0.5;
+  mesh.position.y = blockIndex * 0.5 + coords.y;
   mesh.position.z = coords.z;
 
   scene.add(mesh);
