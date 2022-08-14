@@ -50,7 +50,7 @@ const raycaster = new THREE.Raycaster();
 // BOARD
 const loader = new GLTFLoader();
 loader.load(
-  "Board.glb",
+  "boardDev.glb",
   function (gltf) {
     scene.add(gltf.scene);
     scene.position.y = -1;
@@ -75,16 +75,21 @@ loader.load(
 );
 
 //OBJECT
-function createPlayerBlock(coords, blockIndex = 1, color, idx) {
+function createPlayerBlock(coords, blockLevel, color, idx) {
   const geometry = new THREE.CubeGeometry(1, 1, 1);
   const material = new THREE.MeshLambertMaterial({ color: colors[color] });
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.index = blockIndex + 1;
+  mesh.level = blockLevel;
+  mesh.name = idx + 25;
   mesh.position.x = coords.x;
   mesh.position.y = coords.y + 1;
   mesh.position.z = coords.z;
   scene.add(mesh);
-  checkWinner(Math.floor(idx / 5), idx % 5);
+  checkWinner(
+    Math.floor(Math.floor(idx % 25) % 5),
+    Math.floor(Math.floor(idx % 25) / 5),
+    Math.floor(idx / 25)
+  );
 }
 
 // Load Manager
@@ -161,36 +166,39 @@ function onMouseMove(event) {
   preventClickOnDrag = false;
 }
 
-function verifyX(row, col, maxCol) {
-  let player = board[0][row][col];
+function verifyX(row, col, z, maxCol) {
+  let player = board[z][row][col];
   let count = 0;
+  for (let i = 1; i < 5; i++) {
+    for (let j = 0; j < maxCol; j++) {
+      if (board[i][row][j] === player) count++;
+      else count = 0;
 
-  for (let i = 0; i < maxCol; i++) {
-    if (board[0][row][i] == player) count++;
-    else count = 0;
+      if (count >= 4) return 1;
+    }
+  }
 
-    if (count >= 4) return 1;
+  return 0;
+}
+
+function verifyY(row, col, z, maxRow) {
+  let player = board[z][row][col];
+  let count = 0;
+  for (let i = 1; i < 5; i++) {
+    for (let j = 0; j < maxRow; j++) {
+      if (board[i][j][col] === player) count++;
+      else count = 0;
+
+      if (count >= 4) return 1;
+    }
   }
   return 0;
 }
 
-function verifyY(row, col, maxRow) {
-  let player = board[0][row][col];
-  let count = 0;
-
-  for (let i = 0; i < maxRow; i++) {
-    if (board[0][i][col] == player) count++;
-    else count = 0;
-
-    if (count >= 4) return 1;
-  }
-  return 0;
-}
-
-function checkWinner(x, y) {
-  const checkX = verifyX(x, y, 5, 5);
-  const checkY = verifyY(x, y, 5, 5);
-  console.log(checkX, checkY, x, y, board);
+function checkWinner(x, y, z) {
+  const checkX = verifyX(y, x, z, 5);
+  const checkY = verifyY(y, x, z, 5);
+  console.log(checkX, checkY, x, y, z, board);
   if (checkX === 1 || checkY === 1) {
     alert("Game Over.");
   }
@@ -214,17 +222,16 @@ document.onclick = (e) => {
         !intersects[0].object.index ||
         (intersects[0].object.index <= 5 && !intersects[0].object.stacked)
       ) {
-        let idx = intersects[0].object.userData.name.charAt(3);
-        if (intersects[0].object.userData.name.charAt(4)) {
-          idx += intersects[0].object.userData.name.charAt(4);
-        }
-        board[0][Math.floor(idx / 5)][idx % 5] = currentPlayer;
+        let globalId = parseInt(intersects[0].object.name);
+        board[Math.floor(globalId / 25)][
+          Math.floor(Math.floor(globalId % 25) / 5)
+        ][Math.floor(Math.floor(globalId % 25) % 5)] = currentPlayer;
         intersects[0].object.stacked = true;
         createPlayerBlock(
           intersects[0].object.position,
-          intersects[0].object.index,
+          intersects[0].object.level || 0,
           currentPlayer,
-          idx
+          globalId
         );
         currentPlayer = !currentPlayer;
       } else {
