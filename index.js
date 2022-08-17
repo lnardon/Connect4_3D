@@ -166,39 +166,30 @@ function onMouseMove(event) {
   preventClickOnDrag = false;
 }
 
-function verifyX(row, col, z, maxCol) {
-  let player = board[z][row][col];
+function verifyX(row, col) {
   let count = 0;
-  for (let i = 1; i < 5; i++) {
-    for (let j = 0; j < maxCol; j++) {
-      if (board[i][row][j] === player) count++;
-      else count = 0;
-
-      if (count >= 4) return 1;
-    }
+  for (let i = 0; i < 5; i++) {
+    if (board[0][row][i] === currentPlayer) count++;
+    else count = 0;
+    if (count >= 4) return 1;
   }
-
   return 0;
 }
 
-function verifyY(row, col, z, maxRow) {
-  let player = board[z][row][col];
+function verifyY(row, col) {
   let count = 0;
-  for (let i = 1; i < 5; i++) {
-    for (let j = 0; j < maxRow; j++) {
-      if (board[i][j][col] === player) count++;
-      else count = 0;
-
-      if (count >= 4) return 1;
-    }
+  for (let i = 0; i < 5; i++) {
+    if (board[0][i][col] === currentPlayer) count++;
+    else count = 0;
+    if (count >= 4) return 1;
   }
   return 0;
 }
 
 function checkWinner(x, y, z) {
-  const checkX = verifyX(y, x, z, 5);
-  const checkY = verifyY(y, x, z, 5);
-  console.log(checkX, checkY, x, y, z, board);
+  const checkX = verifyX(y, x, z);
+  const checkY = verifyY(x, y, z);
+  console.log(checkX, checkY, x, y);
   if (checkX === 1 || checkY === 1) {
     alert("Game Over.");
   }
