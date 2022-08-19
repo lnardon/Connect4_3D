@@ -23,15 +23,6 @@ const camera = new THREE.PerspectiveCamera(
   3000
 );
 camera.position.z = 17;
-window.addEventListener(
-  "resize",
-  function () {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  },
-  false
-);
 
 //LIGHTS
 const light1 = new THREE.AmbientLight(0xffffff, 0.5);
@@ -90,6 +81,9 @@ function createPlayerBlock(coords, blockLevel, color, idx) {
     Math.floor(Math.floor(idx % 25) / 5),
     Math.floor(idx / 25)
   );
+  document.getElementsByClassName(
+    "player"
+  )[0].innerText = `Current Player: ${colors[color]}`;
 }
 
 // Load Manager
@@ -247,6 +241,20 @@ document.onclick = (e) => {
     }
   }
 };
+
+document.getElementsByClassName("rulesBtn")[0].addEventListener("click", () => {
+  alert("Rules coming soon !");
+});
+
+window.addEventListener(
+  "resize",
+  function () {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  },
+  false
+);
 
 //RENDER LOOP
 function render() {
