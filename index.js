@@ -72,6 +72,7 @@ function createPlayerBlock(coords, blockLevel, color, idx) {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.level = blockLevel;
   mesh.name = idx + 25;
+  mesh.index = Math.floor(idx / 25);
   mesh.position.x = coords.x;
   mesh.position.y = coords.y + 1;
   mesh.position.z = coords.z;
@@ -218,8 +219,8 @@ document.onclick = (e) => {
     }
     if (intersects.length > 0) {
       if (
-        !intersects[0].object.index ||
-        (intersects[0].object.index <= 5 && !intersects[0].object.stacked)
+        intersects[0].object.index === undefined ||
+        (intersects[0].object.index <= 4 && !intersects[0].object.stacked)
       ) {
         let globalId = parseInt(intersects[0].object.name);
         board[Math.floor(globalId / 25)][
@@ -234,7 +235,7 @@ document.onclick = (e) => {
         );
         currentPlayer = !currentPlayer;
       } else {
-        if (intersects[0].object.index >= 5) {
+        if (intersects[0].object.index >= 4) {
           alert("Maximum of 5 blocks can be stacked.");
         }
       }
