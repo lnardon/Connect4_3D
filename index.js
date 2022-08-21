@@ -22,7 +22,8 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   3000
 );
-camera.position.z = 17;
+camera.position.y = 9;
+camera.position.z = 12;
 
 //LIGHTS
 const light1 = new THREE.AmbientLight(0xffffff, 0.5);
@@ -81,9 +82,9 @@ function createPlayerBlock(coords, blockLevel, color, idx) {
     Math.floor(Math.floor(idx % 25) % 5),
     Math.floor(Math.floor(idx % 25) / 5)
   );
-  document.getElementsByClassName(
-    "player"
-  )[0].innerText = `Current Player: ${colors[color]}`;
+  document.getElementsByClassName("player")[0].innerText = `Current Player: ${
+    colors[!color] === 0xe10040 ? "Red" : "Blue"
+  }`;
 }
 
 // Load Manager
@@ -189,7 +190,11 @@ function checkWinner(x, y) {
   const checkX = verifyX(x);
   const checkY = verifyY(y);
   if (checkX || checkY) {
-    alert(`Game Over. Player ${colors[!currentPlayer]} won.`);
+    alert(
+      `Game Over. Player ${
+        colors[currentPlayer] === 0xe10040 ? "Red" : "Blue"
+      } won.`
+    );
   }
 }
 
