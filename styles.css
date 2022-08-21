@@ -16,6 +16,45 @@ body {
   overflow: hidden;
 }
 
+.modal {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #111111ca;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modalContent {
+  position: relative;
+  width: 90%;
+  max-width: 500px;
+  background-color: #fafafa;
+  padding: 2rem 1rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: column;
+}
+
+.rulesDiv {
+  margin-bottom: 2rem;
+}
+
+.closeBtn {
+  padding: 0.5rem 2rem;
+  border-radius: 0.25rem;
+  outline: none;
+  cursor: pointer;
+  font-weight: bold;
+  background-color: #1a24e5;
+  color: #fafafa;
+  border: none;
+}
+
 .player {
   position: absolute;
   color: #fafafa;
