@@ -79,8 +79,7 @@ function createPlayerBlock(coords, blockLevel, color, idx) {
   scene.add(mesh);
   checkWinner(
     Math.floor(Math.floor(idx % 25) % 5),
-    Math.floor(Math.floor(idx % 25) / 5),
-    Math.floor(idx / 25)
+    Math.floor(Math.floor(idx % 25) / 5)
   );
   document.getElementsByClassName(
     "player"
@@ -149,6 +148,7 @@ let board = [
 ];
 let currentPlayer = false;
 let preventClickOnDrag = false;
+let isModalOpen = false;
 const colors = {
   true: 0xe10040,
   false: 0x00eee1,
@@ -161,7 +161,7 @@ function onMouseMove(event) {
   preventClickOnDrag = false;
 }
 
-function verifyX(row, col) {
+function verifyY(row) {
   let count = 0;
   for (let h = 0; h < 5; h++) {
     for (let i = 0; i < 5; i++) {
@@ -173,7 +173,7 @@ function verifyX(row, col) {
   return 0;
 }
 
-function verifyY(row, col) {
+function verifyX(col) {
   let count = 0;
   for (let h = 0; h < 5; h++) {
     for (let i = 0; i < 5; i++) {
@@ -185,20 +185,9 @@ function verifyY(row, col) {
   return 0;
 }
 
-function verifyXZ(row, col) {
-  let count = 0;
-  for (let i = 0; i < 5; i++) {
-    if (board[0][row][i] === currentPlayer) count++;
-    else count = 0;
-    if (count >= 4) return 1;
-  }
-  return 0;
-}
-
-function checkWinner(x, y, z) {
-  const checkX = verifyX(y, x, z);
-  const checkY = verifyY(y, x, z);
-  console.log(checkX, checkY, x, y);
+function checkWinner(x, y) {
+  const checkX = verifyX(x);
+  const checkY = verifyY(y);
   if (checkX || checkY) {
     alert(`Game Over. Player ${colors[!currentPlayer]} won.`);
   }
@@ -210,7 +199,7 @@ document.onmousedown = (e) => {
 document.addEventListener("mousemove", onMouseMove, false);
 
 document.onclick = (e) => {
-  if (preventClickOnDrag) {
+  if (preventClickOnDrag && !isModalOpen) {
     let intersects;
     if ((intersects = raycaster.intersectObjects(scene.children).length > 0)) {
       intersects = raycaster.intersectObjects(scene.children);
@@ -244,10 +233,12 @@ document.onclick = (e) => {
 };
 
 document.getElementsByClassName("rulesBtn")[0].addEventListener("click", () => {
+  isModalOpen = true;
   document.getElementsByClassName("modal")[0].style.display = "flex";
 });
 document.getElementsByClassName("closeBtn")[0].addEventListener("click", () => {
   document.getElementsByClassName("modal")[0].style.display = "none";
+  isModalOpen = false;
 });
 
 window.addEventListener(
