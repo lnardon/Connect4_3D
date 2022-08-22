@@ -195,6 +195,7 @@ function checkWinner(x, y) {
         colors[currentPlayer] === 0xe10040 ? "Red" : "Blue"
       } won.`
     );
+    window.location.reload();
   }
 }
 
@@ -242,8 +243,9 @@ document.getElementsByClassName("rulesBtn")[0].addEventListener("click", () => {
   document.getElementsByClassName("modal")[0].style.display = "flex";
 });
 document.getElementsByClassName("closeBtn")[0].addEventListener("click", () => {
-  document.getElementsByClassName("modal")[0].style.display = "none";
   isModalOpen = false;
+  preventClickOnDrag = false;
+  document.getElementsByClassName("modal")[0].style.display = "none";
 });
 
 window.addEventListener(
