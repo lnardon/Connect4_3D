@@ -162,11 +162,11 @@ function onMouseMove(event) {
   preventClickOnDrag = false;
 }
 
-function verifyY(row) {
+function verifyX(x) {
   let count = 0;
-  for (let h = 0; h < 5; h++) {
-    for (let i = 0; i < 5; i++) {
-      if (board[h][row][i] === currentPlayer) count++;
+  for (let i = 0; i < 5; i++) {
+    for (let j = 0; j < 5; j++) {
+      if (board[i][j][x] === currentPlayer) count++;
       else count = 0;
       if (count >= 4) return 1;
     }
@@ -174,14 +174,24 @@ function verifyY(row) {
   return 0;
 }
 
-function verifyX(col) {
+function verifyY(y) {
   let count = 0;
-  for (let h = 0; h < 5; h++) {
-    for (let i = 0; i < 5; i++) {
-      if (board[h][i][col] === currentPlayer) count++;
+  for (let i = 0; i < 5; i++) {
+    for (let j = 0; j < 5; j++) {
+      if (board[i][y][j] === currentPlayer) count++;
       else count = 0;
       if (count >= 4) return 1;
     }
+  }
+  return 0;
+}
+
+function verifyZ(x, y) {
+  let count = 0;
+  for (let i = 0; i < 5; i++) {
+    if (board[i][y][x] === currentPlayer) count++;
+    else count = 0;
+    if (count >= 4) return 1;
   }
   return 0;
 }
@@ -189,7 +199,8 @@ function verifyX(col) {
 function checkWinner(x, y) {
   const checkX = verifyX(x);
   const checkY = verifyY(y);
-  if (checkX || checkY) {
+  const checkZ = verifyZ(x, y);
+  if (checkX || checkY || checkZ) {
     alert(
       `Game Over. Player ${
         colors[currentPlayer] === 0xe10040 ? "Red" : "Blue"
@@ -199,12 +210,12 @@ function checkWinner(x, y) {
   }
 }
 
-document.onmousedown = (e) => {
+document.onmousedown = () => {
   preventClickOnDrag = true;
 };
 document.addEventListener("mousemove", onMouseMove, false);
 
-document.onclick = (e) => {
+document.onclick = () => {
   if (preventClickOnDrag && !isModalOpen) {
     let intersects;
     if ((intersects = raycaster.intersectObjects(scene.children).length > 0)) {
